@@ -4,7 +4,6 @@ This projects uses the accelerometer measurement of 6 people over the time. The 
 
 The project describes each steps taken to build the model and all the preprocessing done in data sets to reach the mode.
 
-The data for the project is taken from [1][id]
 ### Data Preprocessing and Preparation 
 
 The ```caret``` package is used for this project.Training and test data sets are read and test data is not used until the model is built.
@@ -34,10 +33,10 @@ ptrain1 <- ptrain1[, -nzVar]
 # Applying same to validation set
 validation <- validation[, -nzVar]
 
-# check for features with almost NAs value and remove if any
-almostNAs <- sapply(ptrain1 , function(x) mean(is.na(x))) > 0.95
-ptrain1 <- ptrain1[, almostNAs == F]
-validation <- validation[, almostNAs == F]
+# check for features with mostly NAs value and remove if any
+mostlyNAs <- sapply(ptrain1 , function(x) mean(is.na(x))) > 0.95
+ptrain1 <- ptrain1[, mostlyNAs == F]
+validation <- validation[, mostlyNAs == F]
 
 # remove variables which are not relevant for building the model. The first 5 feature varible * X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp* are not relevant.
 ptrain1 <- ptrain1[, -(1:5)]
@@ -79,7 +78,7 @@ Let's try to build the second model with ```Random Forest``` and evaluate the ac
 controlPara <- trainControl(method = "cv", number = 3, verboseIter = F,)
 
 #build model using ptrain1
-modelFit2 <- train(classe ~. , data = ptrain1 , trControl = controlPara )
+modelFit2 <- train(classe ~. , data = ptrain1 ,method = "rf", trControl = controlPara )
 ```
 
 ### Second Model Evaulation
@@ -104,16 +103,16 @@ Since we have divided our origan training data sets ```ptrain``` into ```ptrain1
 
 ```{r}
 # remove features with nearly with zero variance using 
-nzVar <-  nearZeroVar(ptrain1)
+nzVar <-  nearZeroVar(ptrain)
 ptrain <- ptrain[, -nzVar]
 
 # Applying same to validation set
 ptest <- ptest[, -nzVar]
 
-# check for features with almost NAs value and remove if any
-almostNAs <- sapply(ptrain , function(x) mean(is.na(x))) > 0.95
-ptrain <- ptrain[, almostNAs == F]
-ptest <- ptest[, almostNAs == F]
+# check for features with mostly NAs value and remove if any
+mostlyNAs <- sapply(ptrain , function(x) mean(is.na(x))) > 0.95
+ptrain <- ptrain[, mostlyNAs == F]
+ptest <- ptest[, mostlyNAs == F]
 
 # remove variables which are not relevant for building the model. The first 5 feature varible * X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp* are not relevant.
 ptrain <- ptrain[, -(1:5)]
@@ -125,10 +124,11 @@ Now we fit the model on the complete training data sets.
 
 ```{r}
 # Use 3-fold cross validation to build the model
-controlPara <- trainControl(method = "cv", number = 3, verboseIter = F,)
+controlPara <- trainControl(method = "cv", number = 3, verboseIter = F)
 
-#build model using ptrain1
-modelFinal <- train(classe ~. , data = ptrain , trControl = controlPara )
+#build model using ptrain
+modelFinal <- train(classe ~. , data = ptrain ,method = "rf", trControl = controlPara )
+
 ```
 
 ### Prediction on Test Data Set
@@ -141,7 +141,7 @@ The test data sets ```ptest``` contains 20 observations. The prediction output f
 prediction <- predict(modelFinal, newdata = ptest)
 
 # create the character vector for prediction class
-preds <- as.character(preds)
+preds <- as.character(prediction)
 
 # write prediction for each observation to the files
 write_to_files <- function(x) {
@@ -155,5 +155,3 @@ write_to_files <- function(x) {
 # create prediction files to submit
 write_to_files(preds)
 ```
-
-[id]: Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013. 
