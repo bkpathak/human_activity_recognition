@@ -29,6 +29,7 @@ We will now anlyse the each features of the ```ptrain1``` and remove feauters wh
 # remove features with nearly with zero variance using 
 nzVar <-  nearZeroVar(ptrain1)
 ptrain1 <- ptrain1[, -nzVar]
+
 # Applying same to validation set
 validation <- validation[, -nzVar]
 
@@ -51,7 +52,6 @@ First, I planned to build the model using ```neural network```.Since the problem
 controlPara <- trainControl(method = "cv", number = 3, verboseIter = F,)
 
 #build model using ptrain1
-
 modelFit1 <- train(classe ~ ., data = ptrain1, method = "nnet", trControl = controlPara,trace = F)
 ```
 
@@ -60,13 +60,16 @@ modelFit1 <- train(classe ~ ., data = ptrain1, method = "nnet", trControl = cont
 The fitted model is used to predict tje label for our validation set and find the *out-of-sample* error.Confusion matrix is used to compare the output from the our model to the actual labels of the data.
 
 ```{r}
+# uses modelFit1 to predict classe for our validation data sets
 prediction <- predict(modelFit1, newdata = validation)
+
+# Show the confusion matrix with other relevant information to evaluate our model
 confusionMatrix(validation$classe, prediction)
 ```
 
 The performance of this model is less than satisfactory with just 38 % accuracy.The matrix shows there are lots of misclassification. The nnet is feed forward model so the neural network with back propagation may give more accuracy then just feed forward model. 
 
-#### Second Model Construction
+### Second Model Construction
 
 Let's try to build the second model with ```Random Forest``` and evaluate the accuracy of model on the validation data sets.The model is build with 3-fold CV.
 
@@ -74,7 +77,65 @@ Let's try to build the second model with ```Random Forest``` and evaluate the ac
 # Use 3-fold cross validation to build the model
 controlPara <- trainControl(method = "cv", number = 3, verboseIter = F,)
 
+#build model using ptrain1
 modelFit2 <- train(classe ~. , data = ptrain1 , trControl = controlPara )
 ```
 
+### Second Model Evaulation
 
+The fitted model is used to predict tje label for our validation set and find the *out-of-sample* error.Confusion matrix is used to compare the output from the our model to the actual labels of the data.
+
+```{r}
+# uses modelFit1 to predict classe for our validation data sets
+prediction <- predict(modelFit2, newdata = validation)
+
+# Show the confusion matrix with other relevant information to evaluate our model
+confusionMatrix(validation$classe, prediction)
+```
+
+The ```modelFit2``` build with ```Random Forest``` is far better then our previos model ```modelFit1```.The ```out-of-sample``` error for the model is less 1 %. This is the excellent model with 99 % accuarcy. We will use this model as our final model and used this to predict the classes on our test data sets.
+
+### Final Model
+
+Since we have divided our origan training data sets ```ptrain``` into ```ptrain1``` and ```validation``` for finding the *out-of-sample* error.Now we will build the model using complete trianing data sets ```ptrain```.We also apply the same data pre-processing steps on both ```ptrain``` and ```ptest``` data sets.
+
+#### Preprocessing on traing and test data sets 
+
+```{r}
+# remove features with nearly with zero variance using 
+nzVar <-  nearZeroVar(ptrain1)
+ptrain <- ptrain[, -nzVar]
+
+# Applying same to validation set
+ptest <- ptest[, -nzVar]
+
+# check for features with almost NAs value and remove if any
+almostNAs <- sapply(ptrain , function(x) mean(is.na(x))) > 0.95
+ptrain <- ptrain[, almostNAs == F]
+ptest <- ptest[, almostNAs == F]
+
+# remove variables which are not relevant for building the model. The first 5 feature varible * X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp* are not relevant.
+ptrain <- ptrain[, -(1:5)]
+ptest <- ptest[, -(1:5)]
+```
+
+#### Building the Final Model
+Now we fit the model on the complete training data sets.
+
+```{r}
+# Use 3-fold cross validation to build the model
+controlPara <- trainControl(method = "cv", number = 3, verboseIter = F,)
+
+#build model using ptrain1
+modelFinal <- train(classe ~. , data = ptrain , trControl = controlPara )
+```
+
+### Prediction on Test Data Set
+Now we will use our final model ```modelFinal``` to predict the class of our test data set.We have applied the same data preprocessing methods to test data sets as to training data sets.
+
+The test data sets ```ptest``` contains 20 observations. The prediction output for each observation is written to the separate file.
+
+```{r}
+# predict the class of test data
+prediction <- predict(modelFinal, newdata = ptest)
+```
