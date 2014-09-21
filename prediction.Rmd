@@ -106,7 +106,7 @@ Since we have divided our origan training data sets ```ptrain``` into ```ptrain1
 nzVar <-  nearZeroVar(ptrain)
 ptrain <- ptrain[, -nzVar]
 
-# Applying same to validation set
+# Applying same to test data set
 ptest <- ptest[, -nzVar]
 
 # check for features with mostly NAs value and remove if any
