@@ -4,6 +4,7 @@ This projects uses the accelerometer measurement of 6 people over the time. The 
 
 The project describes each steps taken to build the model and all the preprocessing done in data sets to reach the mode.
 
+The data for the project is taken from [1][id]
 ### Data Preprocessing and Preparation 
 
 The ```caret``` package is used for this project.Training and test data sets are read and test data is not used until the model is built.
@@ -154,3 +155,5 @@ write_to_files <- function(x) {
 # create prediction files to submit
 write_to_files(preds)
 ```
+
+[id]: Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013. 
