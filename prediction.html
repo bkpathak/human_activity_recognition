@@ -61,13 +61,14 @@ validation &lt;- ptrain[-inTrain, ]</code></pre>
 <pre class="r"><code># remove features with nearly with zero variance using 
 nzVar &lt;-  nearZeroVar(ptrain1)
 ptrain1 &lt;- ptrain1[, -nzVar]
+
 # Applying same to validation set
 validation &lt;- validation[, -nzVar]
 
-# check for features with almost NAs value and remove if any
-almostNAs &lt;- sapply(ptrain1 , function(x) mean(is.na(x))) &gt; 0.95
-ptrain1 &lt;- ptrain1[, almostNAs == F]
-validation &lt;- validation[, almostNAs == F]
+# check for features with mostly NAs value and remove if any
+mostlyNAs &lt;- sapply(ptrain1 , function(x) mean(is.na(x))) &gt; 0.95
+ptrain1 &lt;- ptrain1[, mostlyNAs == F]
+validation &lt;- validation[, mostlyNAs == F]
 
 # remove variables which are not relevant for building the model. The first 5 feature varible * X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp* are not relevant.
 ptrain1 &lt;- ptrain1[, -(1:5)]
@@ -75,414 +76,162 @@ validation &lt;- validation[, -(1:5)]</code></pre>
 </div>
 <div id="model-construction" class="section level3">
 <h3>Model Construction</h3>
-<p>First, I planned to build the model using neural network.Since the problem is supervised learning and neural nets are good at classification task.To make the model more robust I will use k - fold cross validation to build the model.</p>
+<p>First, I planned to build the model using <code>neural network</code>.Since the problem is supervised learning and neural nets are good at classification task.To make the model more robust I will use 3 - fold cross validation to build the model.</p>
 <pre class="r"><code># Use 3-fold cross validation to build the model
-controlPara &lt;- trainControl(method = &quot;cv&quot;, number = 3, verboseIter = F )
+controlPara &lt;- trainControl(method = &quot;cv&quot;, number = 3, verboseIter = F,)
 
 #build model using ptrain1
-
-modelFit &lt;- train(classe ~ ., data = ptrain1, method = &quot;nnet&quot;, trControl = controlPara)</code></pre>
+modelFit1 &lt;- train(classe ~ ., data = ptrain1, method = &quot;nnet&quot;, trControl = controlPara,trace = F)</code></pre>
 <pre><code>## Loading required package: nnet</code></pre>
-<pre><code>## # weights:  64
-## initial  value 15822.946918 
-## iter  10 value 14238.999367
-## iter  20 value 14014.368950
-## iter  30 value 13979.838328
-## iter  40 value 13914.557628
-## iter  50 value 13899.897337
-## iter  60 value 13891.335903
-## iter  70 value 13887.384143
-## iter  80 value 13886.473610
-## iter  90 value 13883.053909
-## iter 100 value 13880.769629
-## final  value 13880.769629 
-## stopped after 100 iterations
-## # weights:  182
-## initial  value 19197.400011 
-## iter  10 value 14110.397309
-## iter  20 value 13830.319113
-## iter  30 value 13726.053091
-## iter  40 value 13648.012432
-## iter  50 value 13586.102279
-## iter  60 value 13400.603904
-## iter  70 value 13266.954804
-## iter  80 value 13243.373212
-## iter  90 value 13120.397747
-## iter 100 value 13110.099200
-## final  value 13110.099200 
-## stopped after 100 iterations
-## # weights:  300
-## initial  value 16718.775723 
-## iter  10 value 14404.835369
-## iter  20 value 14104.637033
-## iter  30 value 13971.637660
-## iter  40 value 13541.772202
-## iter  50 value 13391.135857
-## iter  60 value 13265.951269
-## iter  70 value 13216.040261
-## iter  80 value 13066.001500
-## iter  90 value 12832.214595
-## iter 100 value 12755.635017
-## final  value 12755.635017 
-## stopped after 100 iterations
-## # weights:  64
-## initial  value 15199.921752 
-## iter  10 value 14006.701724
-## iter  20 value 13871.016905
-## iter  30 value 13850.245468
-## iter  40 value 13755.803764
-## iter  50 value 13716.415018
-## iter  60 value 13661.625260
-## iter  70 value 13657.460667
-## iter  80 value 13649.252690
-## iter  90 value 13645.158841
-## iter 100 value 13641.361364
-## final  value 13641.361364 
-## stopped after 100 iterations
-## # weights:  182
-## initial  value 15719.531579 
-## iter  10 value 13724.686188
-## iter  20 value 13505.692600
-## iter  30 value 13350.266063
-## iter  40 value 13129.133465
-## iter  50 value 13032.641442
-## iter  60 value 12979.518471
-## iter  70 value 12947.086227
-## iter  80 value 12893.428499
-## iter  90 value 12839.058979
-## iter 100 value 12776.964152
-## final  value 12776.964152 
-## stopped after 100 iterations
-## # weights:  300
-## initial  value 15582.574717 
-## iter  10 value 13545.333578
-## iter  20 value 13202.700155
-## iter  30 value 13058.365383
-## iter  40 value 13004.284415
-## iter  50 value 12851.954162
-## iter  60 value 12793.948313
-## iter  70 value 12636.047900
-## iter  80 value 12451.642000
-## iter  90 value 12332.895705
-## iter 100 value 12272.070468
-## final  value 12272.070468 
-## stopped after 100 iterations
-## # weights:  64
-## initial  value 15768.783837 
-## iter  10 value 14477.971246
-## iter  20 value 14465.372658
-## iter  30 value 14456.386283
-## iter  40 value 14324.411401
-## iter  50 value 13908.762064
-## iter  60 value 13749.246990
-## iter  70 value 13571.936480
-## iter  80 value 13437.547115
-## iter  90 value 13381.656207
-## iter 100 value 13367.758603
-## final  value 13367.758603 
-## stopped after 100 iterations
-## # weights:  182
-## initial  value 15379.676933 
-## iter  10 value 13792.665381
-## iter  20 value 13721.525233
-## iter  30 value 13677.406150
-## iter  40 value 13551.289473
-## iter  50 value 13477.079111
-## iter  60 value 13433.477998
-## iter  70 value 13388.132114
-## iter  80 value 13357.152617
-## iter  90 value 13307.388849
-## iter 100 value 13300.608182
-## final  value 13300.608182 
-## stopped after 100 iterations
-## # weights:  300
-## initial  value 19117.363245 
-## iter  10 value 13873.441192
-## iter  20 value 13633.658527
-## iter  30 value 13351.245829
-## iter  40 value 13188.681365
-## iter  50 value 13029.040588
-## iter  60 value 12838.050976
-## iter  70 value 12733.127412
-## iter  80 value 12353.407020
-## iter  90 value 12033.681162
-## iter 100 value 11969.914553
-## final  value 11969.914553 
-## stopped after 100 iterations
-## # weights:  64
-## initial  value 15237.434483 
-## iter  10 value 14517.620545
-## iter  20 value 14506.397682
-## iter  30 value 14241.866831
-## iter  40 value 14164.603956
-## iter  50 value 14103.105176
-## iter  60 value 14012.423665
-## iter  70 value 13952.724026
-## iter  80 value 13885.758405
-## iter  90 value 13871.582490
-## iter 100 value 13838.854687
-## final  value 13838.854687 
-## stopped after 100 iterations
-## # weights:  182
-## initial  value 15382.612439 
-## iter  10 value 14401.939386
-## iter  20 value 13754.082680
-## iter  30 value 13608.047758
-## iter  40 value 13518.659591
-## iter  50 value 13378.885803
-## iter  60 value 13337.738267
-## iter  70 value 13244.698297
-## iter  80 value 13203.776860
-## iter  90 value 13181.468954
-## iter 100 value 13153.080000
-## final  value 13153.080000 
-## stopped after 100 iterations
-## # weights:  300
-## initial  value 16223.888998 
-## iter  10 value 13717.567190
-## iter  20 value 13594.562143
-## iter  30 value 13508.436422
-## iter  40 value 13392.902428
-## iter  50 value 13171.438203
-## iter  60 value 13128.924507
-## iter  70 value 12938.261290
-## iter  80 value 12705.511916
-## iter  90 value 12522.998446
-## iter 100 value 12466.812931
-## final  value 12466.812931 
-## stopped after 100 iterations
-## # weights:  64
-## initial  value 15869.943928 
-## iter  10 value 14011.445460
-## iter  20 value 13967.841263
-## iter  30 value 13948.092533
-## iter  40 value 13739.501382
-## iter  50 value 13489.870155
-## iter  60 value 13421.256469
-## iter  70 value 13398.952831
-## iter  80 value 13382.099252
-## iter  90 value 13281.394113
-## iter 100 value 13247.723701
-## final  value 13247.723701 
-## stopped after 100 iterations
-## # weights:  182
-## initial  value 17432.681025 
-## iter  10 value 14703.090709
-## iter  20 value 14458.186311
-## iter  30 value 14399.727378
-## iter  40 value 14184.527015
-## iter  50 value 13972.809328
-## iter  60 value 13888.489547
-## iter  70 value 13876.773469
-## iter  80 value 13872.551489
-## iter  90 value 13752.547453
-## iter 100 value 13471.510379
-## final  value 13471.510379 
-## stopped after 100 iterations
-## # weights:  300
-## initial  value 17175.774866 
-## iter  10 value 14252.121402
-## iter  20 value 13975.797637
-## iter  30 value 13932.469166
-## iter  40 value 13906.106999
-## iter  50 value 13714.205740
-## iter  60 value 13415.552142
-## iter  70 value 13366.377808
-## iter  80 value 13317.659333
-## iter  90 value 13188.747026
-## iter 100 value 13149.909329
-## final  value 13149.909329 
-## stopped after 100 iterations
-## # weights:  64
-## initial  value 14756.444452 
-## iter  10 value 14214.647660
-## iter  20 value 14044.493633
-## iter  30 value 13953.955119
-## iter  40 value 13922.755389
-## iter  50 value 13915.543699
-## iter  60 value 13909.143589
-## iter  70 value 13892.696318
-## iter  80 value 13882.343900
-## final  value 13882.301492 
-## converged
-## # weights:  182
-## initial  value 15685.749288 
-## iter  10 value 14178.509597
-## iter  20 value 13944.049678
-## iter  30 value 13889.058644
-## iter  40 value 13805.986504
-## iter  50 value 13690.970816
-## iter  60 value 13408.211314
-## iter  70 value 13150.108754
-## iter  80 value 13055.175331
-## iter  90 value 13040.946085
-## iter 100 value 13030.656840
-## final  value 13030.656840 
-## stopped after 100 iterations
-## # weights:  300
-## initial  value 17471.372274 
-## iter  10 value 13944.879337
-## iter  20 value 13202.619067
-## iter  30 value 12976.946538
-## iter  40 value 12844.048419
-## iter  50 value 12802.039641
-## iter  60 value 12714.520166
-## iter  70 value 12607.322934
-## iter  80 value 12489.711877
-## iter  90 value 12390.828760
-## iter 100 value 12269.831733
-## final  value 12269.831733 
-## stopped after 100 iterations
-## # weights:  64
-## initial  value 15569.414825 
-## iter  10 value 14226.644601
-## iter  20 value 14108.248350
-## iter  30 value 13963.441052
-## iter  40 value 13928.036107
-## iter  50 value 13870.877835
-## iter  60 value 13859.245719
-## iter  70 value 13846.486099
-## iter  80 value 13842.989936
-## iter  90 value 13815.608253
-## iter 100 value 13806.486250
-## final  value 13806.486250 
-## stopped after 100 iterations
-## # weights:  182
-## initial  value 16230.695669 
-## iter  10 value 14241.922897
-## iter  20 value 13785.684684
-## iter  30 value 13494.329387
-## iter  40 value 13378.585415
-## iter  50 value 13191.875624
-## iter  60 value 13167.401274
-## iter  70 value 13079.549141
-## iter  80 value 13018.966612
-## iter  90 value 12916.015374
-## iter 100 value 12869.049092
-## final  value 12869.049092 
-## stopped after 100 iterations
-## # weights:  300
-## initial  value 16830.523734 
-## iter  10 value 14242.856847
-## iter  20 value 13649.649102
-## iter  30 value 13500.383596
-## iter  40 value 13329.011458
-## iter  50 value 13292.789397
-## iter  60 value 13185.737048
-## iter  70 value 13083.362307
-## iter  80 value 13012.175836
-## iter  90 value 12884.259835
-## iter 100 value 12770.465417
-## final  value 12770.465417 
-## stopped after 100 iterations
-## # weights:  64
-## initial  value 15846.365930 
-## iter  10 value 14326.171523
-## iter  20 value 14222.390892
-## iter  30 value 14064.027136
-## iter  40 value 14038.493877
-## iter  50 value 14032.867639
-## iter  60 value 14008.787602
-## iter  70 value 13998.222044
-## iter  80 value 13994.375442
-## iter  90 value 13972.622450
-## iter 100 value 13938.844333
-## final  value 13938.844333 
-## stopped after 100 iterations
-## # weights:  182
-## initial  value 17496.519834 
-## iter  10 value 14447.922942
-## iter  20 value 14303.504410
-## iter  30 value 14102.426715
-## iter  40 value 14057.235313
-## iter  50 value 13886.440327
-## iter  60 value 13838.883862
-## iter  70 value 13745.589043
-## iter  80 value 13711.852243
-## iter  90 value 13681.221395
-## iter 100 value 13500.309666
-## final  value 13500.309666 
-## stopped after 100 iterations
-## # weights:  300
-## initial  value 14976.517370 
-## iter  10 value 13523.796098
-## iter  20 value 13412.588858
-## iter  30 value 13234.462087
-## iter  40 value 13057.709301
-## iter  50 value 12804.193441
-## iter  60 value 12670.077345
-## iter  70 value 12531.370784
-## iter  80 value 12388.755988
-## iter  90 value 12294.766910
-## iter 100 value 12161.666322
-## final  value 12161.666322 
-## stopped after 100 iterations
-## # weights:  64
-## initial  value 15617.307358 
-## iter  10 value 14463.183840
-## iter  20 value 14341.865125
-## iter  30 value 14256.311236
-## iter  40 value 14253.578311
-## iter  50 value 14209.253081
-## iter  60 value 14192.105066
-## iter  70 value 14148.317953
-## iter  80 value 14024.468626
-## iter  90 value 13845.029064
-## iter 100 value 13780.079259
-## final  value 13780.079259 
-## stopped after 100 iterations
-## # weights:  182
-## initial  value 17018.426072 
-## iter  10 value 14009.866802
-## iter  20 value 13570.317076
-## iter  30 value 13435.145267
-## iter  40 value 13346.227495
-## iter  50 value 13218.744466
-## iter  60 value 13161.566006
-## iter  70 value 13126.177439
-## iter  80 value 13029.914346
-## iter  90 value 12996.184759
-## iter 100 value 12963.129101
-## final  value 12963.129101 
-## stopped after 100 iterations
-## # weights:  300
-## initial  value 15258.595842 
-## iter  10 value 13570.289275
-## iter  20 value 13291.170932
-## iter  30 value 13011.591419
-## iter  40 value 12845.299887
-## iter  50 value 12731.526114
-## iter  60 value 12543.102569
-## iter  70 value 12416.069534
-## iter  80 value 12371.207687
-## iter  90 value 12294.626393
-## iter 100 value 12203.517231
-## final  value 12203.517231 
-## stopped after 100 iterations
-## # weights:  300
-## initial  value 29056.046889 
-## iter  10 value 21392.114755
-## iter  20 value 20366.211830
-## iter  30 value 20135.020408
-## iter  40 value 20085.334628
-## iter  50 value 20028.675556
-## iter  60 value 20009.164277
-## iter  70 value 19943.270720
-## iter  80 value 19775.110683
-## iter  90 value 19549.147285
-## iter 100 value 19471.737957
-## final  value 19471.737957 
-## stopped after 100 iterations</code></pre>
-<div id="model-summary" class="section level5">
-<h5>Model Summary</h5>
-<pre class="r"><code>modelFit$finalModel</code></pre>
-<pre><code>## a 53-5-5 network with 300 weights
-## inputs: num_window roll_belt pitch_belt yaw_belt total_accel_belt gyros_belt_x gyros_belt_y gyros_belt_z accel_belt_x accel_belt_y accel_belt_z magnet_belt_x magnet_belt_y magnet_belt_z roll_arm pitch_arm yaw_arm total_accel_arm gyros_arm_x gyros_arm_y gyros_arm_z accel_arm_x accel_arm_y accel_arm_z magnet_arm_x magnet_arm_y magnet_arm_z roll_dumbbell pitch_dumbbell yaw_dumbbell total_accel_dumbbell gyros_dumbbell_x gyros_dumbbell_y gyros_dumbbell_z accel_dumbbell_x accel_dumbbell_y accel_dumbbell_z magnet_dumbbell_x magnet_dumbbell_y magnet_dumbbell_z roll_forearm pitch_forearm yaw_forearm total_accel_forearm gyros_forearm_x gyros_forearm_y gyros_forearm_z accel_forearm_x accel_forearm_y accel_forearm_z magnet_forearm_x magnet_forearm_y magnet_forearm_z 
-## output(s): .outcome 
-## options were - softmax modelling  decay=1e-04</code></pre>
+</div>
+<div id="model-evaluation" class="section level3">
+<h3>Model Evaluation</h3>
+<p>The fitted model is used to predict tje label for our validation set and find the <em>out-of-sample</em> error.Confusion matrix is used to compare the output from the our model to the actual labels of the data.</p>
+<pre class="r"><code># uses modelFit1 to predict classe for our validation data sets
+prediction &lt;- predict(modelFit1, newdata = validation)
+
+# Show the confusion matrix with other relevant information to evaluate our model
+confusionMatrix(validation$classe, prediction)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction   A   B   C   D   E
+##          A 821   0 691   0 162
+##          B  36   4 828   0 271
+##          C  16   5 925   0  80
+##          D  17   0 726   0 221
+##          E  41   0 741   0 300
+## 
+## Overall Statistics
+##                                         
+##                Accuracy : 0.348         
+##                  95% CI : (0.336, 0.361)
+##     No Information Rate : 0.665         
+##     P-Value [Acc &gt; NIR] : 1             
+##                                         
+##                   Kappa : 0.192         
+##  Mcnemar's Test P-Value : NA            
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity             0.882  0.44444    0.237       NA    0.290
+## Specificity             0.828  0.80684    0.949    0.836    0.839
+## Pos Pred Value          0.490  0.00351    0.902       NA    0.277
+## Neg Pred Value          0.974  0.99895    0.385       NA    0.847
+## Prevalence              0.158  0.00153    0.665    0.000    0.176
+## Detection Rate          0.140  0.00068    0.157    0.000    0.051
+## Detection Prevalence    0.284  0.19354    0.174    0.164    0.184
+## Balanced Accuracy       0.855  0.62564    0.593       NA    0.564</code></pre>
+<p>The performance of this model is less than satisfactory with just 38 % accuracy.The matrix shows there are lots of misclassification. The nnet is feed forward model so the neural network with back propagation may give more accuracy then just feed forward model.</p>
+</div>
+<div id="second-model-construction" class="section level3">
+<h3>Second Model Construction</h3>
+<p>Let’s try to build the second model with <code>Random Forest</code> and evaluate the accuracy of model on the validation data sets.The model is build with 3-fold CV.</p>
+<pre class="r"><code># Use 3-fold cross validation to build the model
+controlPara &lt;- trainControl(method = &quot;cv&quot;, number = 3, verboseIter = F,)
+
+#build model using ptrain1
+modelFit2 &lt;- train(classe ~. , data = ptrain1 ,method = &quot;rf&quot;, trControl = controlPara )</code></pre>
+<pre><code>## Loading required package: randomForest
+## randomForest 4.6-10
+## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+</div>
+<div id="second-model-evaulation" class="section level3">
+<h3>Second Model Evaulation</h3>
+<p>The fitted model is used to predict tje label for our validation set and find the <em>out-of-sample</em> error.Confusion matrix is used to compare the output from the our model to the actual labels of the data.</p>
+<pre class="r"><code># uses modelFit1 to predict classe for our validation data sets
+prediction &lt;- predict(modelFit2, newdata = validation)
+
+# Show the confusion matrix with other relevant information to evaluate our model
+confusionMatrix(validation$classe, prediction)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1674    0    0    0    0
+##          B    7 1131    1    0    0
+##          C    0    2 1024    0    0
+##          D    0    0    5  959    0
+##          E    0    0    0    5 1077
+## 
+## Overall Statistics
+##                                         
+##                Accuracy : 0.997         
+##                  95% CI : (0.995, 0.998)
+##     No Information Rate : 0.286         
+##     P-Value [Acc &gt; NIR] : &lt;2e-16        
+##                                         
+##                   Kappa : 0.996         
+##  Mcnemar's Test P-Value : NA            
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity             0.996    0.998    0.994    0.995    1.000
+## Specificity             1.000    0.998    1.000    0.999    0.999
+## Pos Pred Value          1.000    0.993    0.998    0.995    0.995
+## Neg Pred Value          0.998    1.000    0.999    0.999    1.000
+## Prevalence              0.286    0.193    0.175    0.164    0.183
+## Detection Rate          0.284    0.192    0.174    0.163    0.183
+## Detection Prevalence    0.284    0.194    0.174    0.164    0.184
+## Balanced Accuracy       0.998    0.998    0.997    0.997    0.999</code></pre>
+<p>The <code>modelFit2</code> build with <code>Random Forest</code> is far better then our previos model <code>modelFit1</code>.The <code>out-of-sample</code> error for the model is less 1 %. This is the excellent model with 99 % accuarcy. We will use this model as our final model and used this to predict the classes on our test data sets.</p>
+</div>
+<div id="final-model" class="section level3">
+<h3>Final Model</h3>
+<p>Since we have divided our origan training data sets <code>ptrain</code> into <code>ptrain1</code> and <code>validation</code> for finding the <em>out-of-sample</em> error.Now we will build the model using complete trianing data sets <code>ptrain</code>.We also apply the same data pre-processing steps on both <code>ptrain</code> and <code>ptest</code> data sets.</p>
+<div id="preprocessing-on-traing-and-test-data-sets" class="section level4">
+<h4>Preprocessing on traing and test data sets</h4>
+<pre class="r"><code># remove features with nearly with zero variance using 
+nzVar &lt;-  nearZeroVar(ptrain)
+ptrain &lt;- ptrain[, -nzVar]
+
+# Applying same to test data set
+ptest &lt;- ptest[, -nzVar]
+
+# check for features with mostly NAs value and remove if any
+mostlyNAs &lt;- sapply(ptrain , function(x) mean(is.na(x))) &gt; 0.95
+ptrain &lt;- ptrain[, mostlyNAs == F]
+ptest &lt;- ptest[, mostlyNAs == F]
+
+# remove variables which are not relevant for building the model. The first 5 feature varible * X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp* are not relevant.
+ptrain &lt;- ptrain[, -(1:5)]
+ptest &lt;- ptest[, -(1:5)]</code></pre>
+</div>
+<div id="building-the-final-model" class="section level4">
+<h4>Building the Final Model</h4>
+<p>Now we fit the model on the complete training data sets.</p>
+<pre class="r"><code># Use 3-fold cross validation to build the model
+controlPara &lt;- trainControl(method = &quot;cv&quot;, number = 3, verboseIter = F)
+
+#build model using ptrain
+modelFinal &lt;- train(classe ~. , data = ptrain ,method = &quot;rf&quot;, trControl = controlPara )</code></pre>
+</div>
+</div>
+<div id="prediction-on-test-data-set" class="section level3">
+<h3>Prediction on Test Data Set</h3>
+<p>Now we will use our final model <code>modelFinal</code> to predict the class of our test data set.We have applied the same data preprocessing methods to test data sets as to training data sets.</p>
+<p>The test data sets <code>ptest</code> contains 20 observations. The prediction output for each observation is written to the separate file.</p>
+<pre class="r"><code># predict the class of test data
+prediction &lt;- predict(modelFinal, newdata = ptest)
+
+# create the character vector for prediction class
+preds &lt;- as.character(prediction)
+
+# write prediction for each observation to the files
+write_to_files &lt;- function(x) {
+    n &lt;- length(x)
+    for(i in 1:n) {
+        filename &lt;- paste0(&quot;output/problem_id_&quot;, i, &quot;.txt&quot;)
+        write.table(x[i], file=filename, quote=F, row.names=F, col.names=F)
+    }
+}
+
+# create prediction files to submit
+write_to_files(preds)</code></pre>
 <div class="references">
 
-</div>
 </div>
 </div>
 
