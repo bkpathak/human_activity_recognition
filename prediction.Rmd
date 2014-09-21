@@ -138,4 +138,19 @@ The test data sets ```ptest``` contains 20 observations. The prediction output f
 ```{r}
 # predict the class of test data
 prediction <- predict(modelFinal, newdata = ptest)
+
+# create the character vector for prediction class
+preds <- as.character(preds)
+
+# write prediction for each observation to the files
+write_to_files <- function(x) {
+    n <- length(x)
+    for(i in 1:n) {
+        filename <- paste0("output/problem_id_", i, ".txt")
+        write.table(x[i], file=filename, quote=F, row.names=F, col.names=F)
+    }
+}
+
+# create prediction files to submit
+write_to_files(preds)
 ```
